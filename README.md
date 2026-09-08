@@ -10,7 +10,7 @@ gestión de las pistas que cada usuario guarda.
 | | |
 |---|---|
 | API | https://api.musicfetch.chickenkiller.com |
-| Frontend | https://musicfetch.chickenkiller.com |
+| Frontend | https://web-musicfetch-frontend.vercel.app |
 
 Ambos apuntan a la misma VM de Google Compute Engine (`34.95.231.70`,
 región `southamerica-east1`). El certificado TLS lo emite Let's Encrypt
