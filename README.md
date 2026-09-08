@@ -18,7 +18,7 @@ mediante Certbot y se renueva solo.
 
 ## Requisitos
 
-- Node.js 18 o superior
+- Node.js 20 o superior
 - MongoDB corriendo en local (`mongodb://127.0.0.1:27017`)
 
 ## Puesta en marcha
