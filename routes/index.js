@@ -12,14 +12,17 @@ const NotFoundError = require('../errors/NotFoundError');
 router.post('/signup', validateSignup, createUser);
 router.post('/signin', validateSignin, login);
 
-// --- A partir de aquí todo exige token válido ---
-router.use(auth);
-
-router.use('/users', userRoutes);
-router.use('/tracks', trackRoutes);
+// --- Rutas protegidas: exigen token válido ---
+// auth se monta en cada grupo y no como un `router.use(auth)` suelto. Con el
+// middleware suelto, todo lo que viniera después pasaba primero por el token,
+// incluido el 404 de abajo: una ruta inexistente respondía 401 en vez de 404.
+router.use('/users', auth, userRoutes);
+router.use('/tracks', auth, trackRoutes);
 
 // 404: middleware sin ruta. Funciona igual en Express 4 y 5,
 // a diferencia de app.get('*') que en Express 5 lanza un TypeError.
+// Dentro de un grupo protegido (/users/loquesea) sigue mandando el token: a
+// quien no se ha identificado no le decimos qué subrutas existen y cuáles no.
 router.use((req, res, next) => {
   next(new NotFoundError(ERROR_MESSAGES.ROUTE_NOT_FOUND));
 });
