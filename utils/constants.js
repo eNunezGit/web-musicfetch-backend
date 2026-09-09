@@ -64,6 +64,14 @@ const VALIDATION_MESSAGES = {
   TITLE_REQUIRED: 'El título es obligatorio',
   ARTIST_REQUIRED: 'El artista es obligatorio',
   OWNER_REQUIRED: 'La pista debe tener un propietario',
+  TYPE_REQUIRED: 'El tipo de tarjeta es obligatorio',
+  TYPE_INVALID: 'El tipo de tarjeta debe ser "artist" o "album"',
+  STAT_LABEL_REQUIRED: 'Cada estadística necesita una etiqueta',
+  STAT_VALUE_REQUIRED: 'Cada estadística necesita un valor',
+  // {#label} y {#limit} los sustituye Joi por el campo y el límite superado
+  TEXT_MAX: 'El campo {#label} no puede superar los {#limit} caracteres',
+  STATS_MAX: 'La tarjeta no puede tener más de {#limit} estadísticas',
+  HIGHLIGHTS_MAX: 'La tarjeta no puede tener más de {#limit} canciones destacadas',
 };
 
 // --- Reglas de autenticación ---
@@ -79,6 +87,17 @@ const USER_RULES = {
   NAME_MAX: 30,
   PASSWORD_MIN: 8,
   DEFAULT_NAME: 'Melómano anónimo',
+};
+
+// Una tarjeta guardada describe un artista o un álbum de la API de música.
+// Los límites acotan lo que un usuario autenticado puede escribir en la base:
+// sin ellos, el cuerpo de un POST /tracks no tendría tamaño máximo.
+const TRACK_RULES = {
+  TYPES: ['artist', 'album'],
+  TEXT_MAX: 200,
+  DESCRIPTION_MAX: 400,
+  STATS_MAX: 6,
+  HIGHLIGHTS_MAX: 6,
 };
 
 // Un _id de MongoDB son 24 caracteres hexadecimales
@@ -100,6 +119,7 @@ module.exports = {
   VALIDATION_MESSAGES,
   AUTH,
   USER_RULES,
+  TRACK_RULES,
   OBJECT_ID_LENGTH,
   MONGO_DUPLICATE_KEY,
   RATE_LIMIT,

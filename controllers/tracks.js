@@ -18,14 +18,20 @@ const getSavedTracks = async (req, res, next) => {
 const saveTrack = async (req, res, next) => {
   try {
     const {
-      trackId, title, artist, album, cover, previewUrl,
+      trackId, type, title, artist, album, subtitle,
+      description, stats, highlights, cover, previewUrl,
     } = req.body;
 
     const track = await Track.create({
       trackId,
+      type,
       title,
       artist,
       album,
+      subtitle,
+      description,
+      stats,
+      highlights,
       cover,
       previewUrl,
       owner: req.user._id,

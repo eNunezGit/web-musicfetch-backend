@@ -1,7 +1,7 @@
 const { celebrate, Joi, Segments } = require('celebrate');
 
 const {
-  USER_RULES, OBJECT_ID_LENGTH, VALIDATION_MESSAGES: MSG, ERROR_MESSAGES,
+  USER_RULES, TRACK_RULES, OBJECT_ID_LENGTH, VALIDATION_MESSAGES: MSG, ERROR_MESSAGES,
 } = require('../utils/constants');
 
 // Joi rechaza por defecto cualquier clave que no esté en el esquema.
@@ -33,6 +33,25 @@ const url = Joi.string().uri().messages({ 'string.uri': MSG.URL_INVALID });
 const texto = (mensaje) => Joi.string().messages({
   'string.empty': mensaje,
   'any.required': mensaje,
+});
+
+const maxTexto = { 'string.max': MSG.TEXT_MAX };
+
+// Texto opcional de una tarjeta. Admite la cadena vacía porque la API de
+// música no siempre trae subtítulo o descripción, y Joi la rechaza por defecto.
+const textoOpcional = (max) => Joi.string().max(max).allow('').messages(maxTexto);
+
+// Una fila de la lista de estadísticas de la tarjeta. El valor llega como
+// número ("Albums: 12") o como texto ("Year: —"), según la fila.
+const stat = Joi.object({
+  label: texto(MSG.STAT_LABEL_REQUIRED)
+    .max(TRACK_RULES.TEXT_MAX)
+    .required()
+    .messages(maxTexto),
+  value: Joi.alternatives()
+    .try(Joi.string().max(TRACK_RULES.TEXT_MAX), Joi.number())
+    .required()
+    .messages({ 'any.required': MSG.STAT_VALUE_REQUIRED }),
 });
 
 const objectId = Joi.string().required().hex().length(OBJECT_ID_LENGTH)
@@ -72,9 +91,24 @@ module.exports = {
   validateSaveTrack: celebrate({
     [Segments.BODY]: Joi.object({
       trackId: texto(MSG.TRACK_ID_REQUIRED).required(),
-      title: texto(MSG.TITLE_REQUIRED).required(),
-      artist: texto(MSG.ARTIST_REQUIRED).required(),
-      album: Joi.string(),
+      type: Joi.string().valid(...TRACK_RULES.TYPES).required().messages({
+        'any.only': MSG.TYPE_INVALID,
+        'string.empty': MSG.TYPE_REQUIRED,
+        'any.required': MSG.TYPE_REQUIRED,
+      }),
+      title: texto(MSG.TITLE_REQUIRED).max(TRACK_RULES.TEXT_MAX).required()
+        .messages(maxTexto),
+      artist: texto(MSG.ARTIST_REQUIRED).max(TRACK_RULES.TEXT_MAX).required()
+        .messages(maxTexto),
+      album: textoOpcional(TRACK_RULES.TEXT_MAX),
+      subtitle: textoOpcional(TRACK_RULES.TEXT_MAX),
+      description: textoOpcional(TRACK_RULES.DESCRIPTION_MAX),
+      stats: Joi.array().items(stat).max(TRACK_RULES.STATS_MAX)
+        .messages({ 'array.max': MSG.STATS_MAX }),
+      highlights: Joi.array()
+        .items(Joi.string().max(TRACK_RULES.TEXT_MAX).messages(maxTexto))
+        .max(TRACK_RULES.HIGHLIGHTS_MAX)
+        .messages({ 'array.max': MSG.HIGHLIGHTS_MAX }),
       cover: url,
       previewUrl: url,
     }).messages(noUnknown),

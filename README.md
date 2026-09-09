@@ -68,8 +68,49 @@ Requieren la cabecera `Authorization: Bearer <token>`.
 | `GET` | `/users/me` | — | `200` usuario actual |
 | `PATCH` | `/users/me` | `{ name, email }` | `200` usuario actualizado |
 | `GET` | `/tracks` | — | `200` pistas guardadas del usuario |
-| `POST` | `/tracks` | `{ trackId, title, artist, album?, cover?, previewUrl? }` | `201` pista guardada |
+| `POST` | `/tracks` | la tarjeta (ver abajo) | `201` pista guardada |
 | `DELETE` | `/tracks/:id` | — | `200` `{ message }` |
+
+En `DELETE /tracks/:id`, el `:id` es el `_id` del documento guardado, no el
+`trackId` de la API de música.
+
+### La tarjeta
+
+Una pista guardada es la tarjeta que el frontend renderiza, no solo su
+identificador: si la API guardara únicamente las claves, el feed tendría que
+volver a pedir cada ficha a la API de música en cada carga.
+
+```json
+{
+  "trackId": "UCedvOgsKFzcK3hA5taf3KoQ",
+  "type": "artist",
+  "title": "Radiohead",
+  "artist": "Radiohead",
+  "subtitle": "8.6M subscribers",
+  "description": "Radiohead son una banda británica...",
+  "stats": [{ "label": "Albums", "value": 12 }],
+  "highlights": ["Creep", "Karma Police"],
+  "cover": "https://lh3.googleusercontent.com/...=w544-h544"
+}
+```
+
+| Campo | | Notas |
+|---|---|---|
+| `trackId` | obligatorio | Identificador en la API de música |
+| `type` | obligatorio | `artist` o `album` |
+| `title` | obligatorio | Máx. 200 caracteres |
+| `artist` | obligatorio | Máx. 200 caracteres |
+| `album` | opcional | Máx. 200 caracteres |
+| `subtitle` | opcional | Segunda línea de la tarjeta |
+| `description` | opcional | Máx. 400 caracteres |
+| `stats` | opcional | Hasta 6 pares `{ label, value }` |
+| `highlights` | opcional | Hasta 6 cadenas |
+| `cover` | opcional | URL de la portada |
+| `previewUrl` | opcional | URL de la vista previa de audio |
+
+Los límites no son decorativos: sin ellos el cuerpo de un `POST /tracks` no
+tendría tamaño máximo y cualquier usuario con cuenta podría llenar la base.
+Viven en `TRACK_RULES`, en `utils/constants.js`.
 
 ## Códigos de error
 
